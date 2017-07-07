@@ -1,0 +1,115 @@
+%Author:  Sayed hasnat  
+%         EEE, Khulna University of Engineering & Technology, khulna, Bangladesh.
+%        e-mail: sayedhasnat6[at]gmail[dot]com
+
+    #include <Servo.h>
+    Servo myservo;
+    #define servopin 9
+    #define trigPin1 3
+    #define echoPin1 2
+    #define trigPin2 4
+    #define echoPin2 5
+    #define trigPin3 7
+    #define echoPin3 8
+    #define ir1 A0
+    #define ir2 A1
+    #define ir3 A2
+    #define ir4 A4
+
+    long distance_cm,duration;
+    float  RightSensor,UpSensor,LeftSensor,width,height;
+    int val1,val2,val3,val4,flag=2;
+    
+    void setup()
+    {
+    Serial.begin (9600);
+    myservo.attach(servopin);
+    pinMode(trigPin1, OUTPUT);
+    pinMode(echoPin1, INPUT);
+    pinMode(trigPin2, OUTPUT);
+    pinMode(echoPin2, INPUT);
+    pinMode(trigPin3, OUTPUT);
+    pinMode(echoPin3, INPUT);
+    pinMode(ir1,INPUT);
+    pinMode(ir2,INPUT);
+    pinMode(ir3,INPUT);
+    pinMode(ir4,INPUT);
+    }
+    
+    void loop(){
+      val1=analogRead(ir1);
+      val2=analogRead(ir2);
+      //myservo.write(45);
+        while(val1>=600 || val2>=500){
+          flag=1;
+          
+        val3=analogRead(ir3);
+        if(val3>=300){
+         myservo.write(90);
+        SonarSensor(trigPin1, echoPin1);
+        RightSensor = distance_cm;
+        SonarSensor(trigPin2, echoPin2);
+        LeftSensor = distance_cm;
+        SonarSensor(trigPin3, echoPin3);
+        UpSensor = distance_cm;
+        width=13- LeftSensor - RightSensor-2;
+        height=10-UpSensor-2;
+        
+        
+         Serial.print("Width=");
+         Serial.print(width);
+         Serial.print(";Height=");
+         Serial.println(height);
+          //delay(100);
+          while(val3>=300){
+          val1=analogRead(ir1);
+          val2=analogRead(ir2);
+          if(val1<600 && val2>=500 && width>=4 && width<=6 && height>=4 && height<=6){   
+              flag=0;  
+             
+              while(val2>=500){
+              flag=0;
+              val2=analogRead(ir2);
+             // Serial.print("val2");
+            }
+          }
+          else if(val1>=600||val2<=500){
+            while(val1>=600||val2>=500){
+              flag=1;
+              val1=analogRead(ir1);
+              val2=analogRead(ir2);
+            }        
+          }
+          val3=analogRead(ir3);
+        }
+        }
+        val1=analogRead(ir1);
+        val2=analogRead(ir2);
+        }
+         
+      val4=analogRead(ir4);
+     // if(val4>=350){ myservo.write(45);}
+      while(val4>=300){
+        if(flag==0){
+          Serial.println("accepted");
+          myservo.write(120);
+        }
+        else if(flag==1){
+          Serial.println("rejected");
+          myservo.write(60);
+        }
+        val4=analogRead(ir4);
+      }
+    }
+    
+   void SonarSensor(int trigPin,int echoPin)
+    {
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    duration = pulseIn(echoPin, HIGH);
+    distance_cm = (duration/2) / 29.1;
+    //distance_inch=(duration/2) / 74;
+    }
